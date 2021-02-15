@@ -1,10 +1,14 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using MyUniversity.UserManager.Api.Extensions;
+using MyUniversity.UserManager.Api.Settings;
+using MyUniversity.UserManager.Repository.DbContext;
 
 namespace MyUniversity.UserManager.Api
 {
@@ -25,6 +29,10 @@ namespace MyUniversity.UserManager.Api
             services.AddCustomServices();
 
             services.AddGrpc();
+
+            var dbSettings = services.BuildServiceProvider().GetService<IOptions<DatabaseSettings>>().Value;
+
+            services.AddDbContext<UserManagerContext>(options => options.UseSqlServer(dbSettings.ConnectionString));
 
         }
 

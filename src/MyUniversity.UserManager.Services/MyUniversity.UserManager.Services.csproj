@@ -8,4 +8,8 @@
       <PackageReference Include="Grpc" Version="2.35.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\MyUniversity.UserManager.Repository\MyUniversity.UserManager.Repository.csproj" />
+    </ItemGroup>
+
 </Project>

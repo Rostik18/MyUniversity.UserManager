@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MyUniversity.UserManager.Api.Settings;
 
 namespace MyUniversity.UserManager.Api.Extensions
 {
@@ -7,7 +8,7 @@ namespace MyUniversity.UserManager.Api.Extensions
     {
         public static void AddCustomConfigurations(this IServiceCollection services, IConfiguration configuration)
         {
-            //services.AddSingleton(configuration.GetSection(nameof(MessageClientConfigs)).Get<MessageClientConfigs>());
+            services.Configure<UserManagerSettings>(configuration.GetSection(nameof(UserManagerSettings)));
         }
 
         public static void AddCustomServices(this IServiceCollection services)

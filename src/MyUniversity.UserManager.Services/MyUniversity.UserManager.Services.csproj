@@ -5,6 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Grpc" Version="2.35.0" />
     </ItemGroup>
 
 </Project>

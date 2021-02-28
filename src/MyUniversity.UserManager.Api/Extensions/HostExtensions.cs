@@ -10,6 +10,7 @@ namespace MyUniversity.UserManager.Api.Extensions
         {
             services.Configure<UserManagerSettings>(configuration.GetSection(nameof(UserManagerSettings)));
             services.Configure<DatabaseSettings>(configuration.GetSection(nameof(DatabaseSettings)));
+            services.Configure<JwtSettings>(configuration.GetSection(nameof(JwtSettings)));
         }
 
         public static void AddCustomServices(this IServiceCollection services)

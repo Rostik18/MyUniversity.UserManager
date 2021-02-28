@@ -2,15 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyUniversity.UserManager.Repository.DbContext;
 
 namespace MyUniversity.UserManager.Repository.Migrations
 {
     [DbContext(typeof(UserManagerContext))]
-    partial class UserManagerContextModelSnapshot : ModelSnapshot
+    [Migration("20210228153448_AddSeedForUserRoleUniversityTable")]
+    partial class AddSeedForUserRoleUniversityTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

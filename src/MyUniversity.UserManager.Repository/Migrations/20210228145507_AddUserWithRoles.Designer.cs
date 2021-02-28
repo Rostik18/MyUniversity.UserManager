@@ -2,15 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyUniversity.UserManager.Repository.DbContext;
 
 namespace MyUniversity.UserManager.Repository.Migrations
 {
     [DbContext(typeof(UserManagerContext))]
-    partial class UserManagerContextModelSnapshot : ModelSnapshot
+    [Migration("20210228145507_AddUserWithRoles")]
+    partial class AddUserWithRoles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -62,9 +64,9 @@ namespace MyUniversity.UserManager.Repository.Migrations
                     b.HasData(
                         new
                         {
-                            TenantId = "11116258-9207-4bdc-b101-fb560cc8cb20",
+                            TenantId = "100ba3c7-2e71-43e1-9c20-8b5f51bb930e",
                             Address = "University Street, 1, Lviv, Lviv region, 79000",
-                            EmailAddress = "Ivan.Franko.University@lnu.edu.ua",
+                            EmailAddress = "IvanFrankoUniversity@gmail.com",
                             Name = "Ivan Franko National University of Lviv",
                             PhoneNumber = "+380 (50) 123 4567"
                         });
@@ -88,33 +90,6 @@ namespace MyUniversity.UserManager.Repository.Migrations
                         .IsUnique();
 
                     b.ToTable("Roles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Role = "SuperAdmin"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Role = "Service"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Role = "UniversityAdmin"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Role = "Teacher"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Role = "Student"
-                        });
                 });
 
             modelBuilder.Entity("MyUniversity.UserManager.Repository.Entities.User.UserEntity", b =>
@@ -160,18 +135,6 @@ namespace MyUniversity.UserManager.Repository.Migrations
                     b.HasIndex("TenantId");
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            EmailAddress = "Super.Admin@gmail.com",
-                            FirstName = "Super",
-                            IsSoftDeleted = false,
-                            LastName = "Admin",
-                            PhoneNumber = "380 50 123 4567",
-                            TenantId = "11116258-9207-4bdc-b101-fb560cc8cb20"
-                        });
                 });
 
             modelBuilder.Entity("MyUniversity.UserManager.Repository.Entities.User.UserRoleEntity", b =>
@@ -187,13 +150,6 @@ namespace MyUniversity.UserManager.Repository.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("UserRoles");
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = 1,
-                            RoleId = 1
-                        });
                 });
 
             modelBuilder.Entity("MyUniversity.UserManager.Repository.Entities.User.UserEntity", b =>

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -6,9 +7,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using MyUniversity.UserManager.Api.Extensions;
 using MyUniversity.UserManager.Api.Settings;
 using MyUniversity.UserManager.Repository.DbContext;
+using System.Text;
 
 namespace MyUniversity.UserManager.Api
 {
@@ -30,6 +33,28 @@ namespace MyUniversity.UserManager.Api
 
             services.AddGrpc();
 
+            var jwtSettings = services.BuildServiceProvider().GetService<IOptions<JwtSettings>>().Value;
+
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(x =>
+            {
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings.Secret)),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    RequireExpirationTime = false,
+                    ValidateLifetime = true
+                };
+            });
+
             var dbSettings = services.BuildServiceProvider().GetService<IOptions<DatabaseSettings>>().Value;
 
             services.AddDbContext<UserManagerContext>(options => options.UseSqlServer(dbSettings.ConnectionString));
@@ -45,6 +70,7 @@ namespace MyUniversity.UserManager.Api
             }
 
             app.UseRouting();
+            app.UseAuthentication();
 
             app.UseEndpoints(endpoints =>
             {

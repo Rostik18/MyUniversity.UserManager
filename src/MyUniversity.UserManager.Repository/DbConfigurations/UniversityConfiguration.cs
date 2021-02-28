@@ -4,7 +4,7 @@ using MyUniversity.UserManager.Repository.Entities.University;
 
 namespace MyUniversity.UserManager.Repository.DbConfigurations
 {
-    public class UniversityConfiguration : IEntityTypeConfiguration<UniversityEntity>
+    class UniversityConfiguration : IEntityTypeConfiguration<UniversityEntity>
     {
         public void Configure(EntityTypeBuilder<UniversityEntity> builder)
         {

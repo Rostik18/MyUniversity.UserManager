@@ -3,13 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29905.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyUniversity.UserManager.Models", "MyUniversity.UserManager.Models\MyUniversity.UserManager.Models.csproj", "{6B4F2364-E63E-4C9B-B7D5-EFDD127B2375}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyUniversity.UserManager.Services", "MyUniversity.UserManager.Services\MyUniversity.UserManager.Services.csproj", "{47214F55-E127-44A8-A339-384912D822C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyUniversity.UserManager.Api", "MyUniversity.UserManager.Api\MyUniversity.UserManager.Api.csproj", "{AAE47459-3D24-4EFD-9536-4F414C94957B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyUniversity.UserManager.Api", "MyUniversity.UserManager.Api\MyUniversity.UserManager.Api.csproj", "{AAE47459-3D24-4EFD-9536-4F414C94957B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyUniversity.UserManager.Repository", "MyUniversity.UserManager.Repository\MyUniversity.UserManager.Repository.csproj", "{25C76019-29B2-4B8F-8461-1228E577AB46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyUniversity.UserManager.Repository", "MyUniversity.UserManager.Repository\MyUniversity.UserManager.Repository.csproj", "{25C76019-29B2-4B8F-8461-1228E577AB46}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6B4F2364-E63E-4C9B-B7D5-EFDD127B2375}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6B4F2364-E63E-4C9B-B7D5-EFDD127B2375}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6B4F2364-E63E-4C9B-B7D5-EFDD127B2375}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6B4F2364-E63E-4C9B-B7D5-EFDD127B2375}.Release|Any CPU.Build.0 = Release|Any CPU
 		{47214F55-E127-44A8-A339-384912D822C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{47214F55-E127-44A8-A339-384912D822C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47214F55-E127-44A8-A339-384912D822C5}.Release|Any CPU.ActiveCfg = Release|Any CPU

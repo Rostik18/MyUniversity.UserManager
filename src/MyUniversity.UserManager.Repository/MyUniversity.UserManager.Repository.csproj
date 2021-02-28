@@ -17,8 +17,4 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\MyUniversity.UserManager.Models\MyUniversity.UserManager.Models.csproj" />
-  </ItemGroup>
-
 </Project>

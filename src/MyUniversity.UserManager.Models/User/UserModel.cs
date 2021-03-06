@@ -1,10 +1,10 @@
-﻿using MyUniversity.UserManager.Repository.Entities.Common;
-using MyUniversity.UserManager.Repository.Entities.University;
+﻿using MyUniversity.UserManager.Models.Roles;
+using MyUniversity.UserManager.Models.University;
 using System.Collections.Generic;
 
-namespace MyUniversity.UserManager.Repository.Entities.User
+namespace MyUniversity.UserManager.Models.User
 {
-    public class UserEntity : IEntity, ISoftDeletableEntity, ITenantSpecificEntity
+    public class UserModel
     {
         public int Id { get; set; }
         public string FirstName { get; set; }
@@ -16,7 +16,7 @@ namespace MyUniversity.UserManager.Repository.Entities.User
         public byte[] PasswordHash { get; set; }
         public byte[] PasswordSalt { get; set; }
 
-        public IEnumerable<UserRoleEntity> UserRoles { get; set; }
-        public UniversityEntity University { get; set; }
+        public IEnumerable<RoleModel> UserRoles { get; set; }
+        public UniversityModel University { get; set; }
     }
 }

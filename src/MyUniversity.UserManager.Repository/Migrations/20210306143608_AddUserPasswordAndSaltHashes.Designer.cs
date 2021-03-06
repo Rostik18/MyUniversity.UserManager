@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyUniversity.UserManager.Repository.DbContext;
 
 namespace MyUniversity.UserManager.Repository.Migrations
 {
     [DbContext(typeof(UMDBContext))]
-    partial class UserManagerContextModelSnapshot : ModelSnapshot
+    [Migration("20210306143608_AddUserPasswordAndSaltHashes")]
+    partial class AddUserPasswordAndSaltHashes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

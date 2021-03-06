@@ -1,11 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MyUniversity.UserManager.Repository.Entities.User;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MyUniversity.UserManager.Repository.DbConfigurations
 {
@@ -42,6 +37,14 @@ namespace MyUniversity.UserManager.Repository.DbConfigurations
                 .WithMany(e => e.Users)
                 .HasForeignKey(e => e.TenantId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property(e => e.PasswordHash)
+                .HasMaxLength(64)
+                .IsRequired();
+
+            builder.Property(e => e.PasswordSalt)
+                .HasMaxLength(128)
+                .IsRequired();
         }
     }
 }

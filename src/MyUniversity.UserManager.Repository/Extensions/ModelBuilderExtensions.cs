@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyUniversity.UserManager.Repository.Entities.University;
 using MyUniversity.UserManager.Repository.Entities.User;
+using MyUniversity.UserManager.Repository.Helpers;
 
 namespace MyUniversity.UserManager.Repository.Extensions
 {
@@ -31,6 +32,7 @@ namespace MyUniversity.UserManager.Repository.Extensions
                     new RoleEntity { Id = 5, Role = "Student" }
                 );
 
+            PasswordHashHelper.CreatePasswordHash("Admin", out var hash, out var salt);
             modelBuilder
                 .Entity<UserEntity>()
                 .HasData(
@@ -42,7 +44,9 @@ namespace MyUniversity.UserManager.Repository.Extensions
                         EmailAddress = "Super.Admin@gmail.com",
                         PhoneNumber = "380 50 123 4567",
                         TenantId = "11116258-9207-4bdc-b101-fb560cc8cb20",
-                        IsSoftDeleted = false
+                        IsSoftDeleted = false,
+                        PasswordHash = hash,
+                        PasswordSalt = salt
                     }
                 );
 

@@ -1,5 +1,5 @@
 ﻿
-namespace MyUniversity.UserManager.Api.Settings
+namespace MyUniversity.UserManager.Settings
 {
     public class UserManagerSettings
     {

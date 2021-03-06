@@ -8,12 +8,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using MyUniversity.UserManager.Api.Extensions;
-using MyUniversity.UserManager.Api.Settings;
+using MyUniversity.UserManager.Extensions;
+using MyUniversity.UserManager.Interceptors;
 using MyUniversity.UserManager.Repository.DbContext;
+using MyUniversity.UserManager.Services;
+using MyUniversity.UserManager.Services.Settings;
+using MyUniversity.UserManager.Settings;
 using System.Text;
 
-namespace MyUniversity.UserManager.Api
+namespace MyUniversity.UserManager
 {
     public class Startup
     {
@@ -30,8 +33,14 @@ namespace MyUniversity.UserManager.Api
         {
             services.AddCustomConfigurations(Configuration);
             services.AddCustomServices();
+            services.AddMapper();
 
             services.AddGrpc();
+            services.AddGrpc(options =>
+            {
+                options.Interceptors.Add<ExceptionInterceptor>();
+                options.EnableDetailedErrors = true;
+            });
 
             var jwtSettings = services.BuildServiceProvider().GetService<IOptions<JwtSettings>>().Value;
 
@@ -55,10 +64,7 @@ namespace MyUniversity.UserManager.Api
                 };
             });
 
-            var dbSettings = services.BuildServiceProvider().GetService<IOptions<DatabaseSettings>>().Value;
-
-            services.AddDbContext<UserManagerContext>(options => options.UseSqlServer(dbSettings.ConnectionString));
-
+            services.AddDBContext();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -70,11 +76,12 @@ namespace MyUniversity.UserManager.Api
             }
 
             app.UseRouting();
-            app.UseAuthentication();
+            // to do: 
+            //app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcService<GreeterService>();
+                endpoints.MapGrpcService<UserController>();
 
                 endpoints.MapGet("/", async context =>
                 {

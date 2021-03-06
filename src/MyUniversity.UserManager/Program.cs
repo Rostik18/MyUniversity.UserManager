@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace MyUniversity.UserManager.Api
+namespace MyUniversity.UserManager
 {
     public class Program
     {

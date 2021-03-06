@@ -1,6 +1,6 @@
 ﻿{
   "profiles": {
-    "MyUniversity.UserManager.Api": {
+    "MyUniversity.UserManager": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": false,

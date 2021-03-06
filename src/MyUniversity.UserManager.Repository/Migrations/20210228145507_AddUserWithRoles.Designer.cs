@@ -8,7 +8,7 @@ using MyUniversity.UserManager.Repository.DbContext;
 
 namespace MyUniversity.UserManager.Repository.Migrations
 {
-    [DbContext(typeof(UserManagerContext))]
+    [DbContext(typeof(UMDBContext))]
     [Migration("20210228145507_AddUserWithRoles")]
     partial class AddUserWithRoles
     {

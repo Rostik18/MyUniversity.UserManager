@@ -6,9 +6,9 @@ using MyUniversity.UserManager.Repository.Extensions;
 
 namespace MyUniversity.UserManager.Repository.DbContext
 {
-    public class UserManagerContext : Microsoft.EntityFrameworkCore.DbContext
+    public class UMDBContext : Microsoft.EntityFrameworkCore.DbContext
     {
-        public UserManagerContext(DbContextOptions<UserManagerContext> options) : base(options)
+        public UMDBContext(DbContextOptions<UMDBContext> options) : base(options)
         {
         }
 

@@ -1,6 +1,6 @@
-﻿using AutoMapper;
+﻿using System.Linq;
+using AutoMapper;
 using MyUniversity.UserManager.Models.User;
-using System.Linq;
 
 namespace MyUniversity.UserManager.MapperProfiles
 {

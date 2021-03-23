@@ -1,5 +1,5 @@
-﻿using MyUniversity.UserManager.Models.CustomExceptions;
-using System.Text;
+﻿using System.Text;
+using MyUniversity.UserManager.Models.CustomExceptions;
 
 namespace MyUniversity.UserManager.Repository.Helpers
 {

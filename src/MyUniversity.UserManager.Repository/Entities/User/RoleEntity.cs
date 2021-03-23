@@ -1,5 +1,5 @@
-﻿using MyUniversity.UserManager.Repository.Entities.Common;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using MyUniversity.UserManager.Repository.Entities.Common;
 
 namespace MyUniversity.UserManager.Repository.Entities.User
 {

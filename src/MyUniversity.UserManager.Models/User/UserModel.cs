@@ -1,6 +1,6 @@
-﻿using MyUniversity.UserManager.Models.Roles;
+﻿using System.Collections.Generic;
+using MyUniversity.UserManager.Models.Roles;
 using MyUniversity.UserManager.Models.University;
-using System.Collections.Generic;
 
 namespace MyUniversity.UserManager.Models.User
 {

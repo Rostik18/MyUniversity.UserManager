@@ -1,5 +1,5 @@
-﻿using MyUniversity.UserManager.Models.User;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using MyUniversity.UserManager.Models.User;
 
 namespace MyUniversity.UserManager.Services
 {

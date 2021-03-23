@@ -1,4 +1,11 @@
-﻿using AutoMapper;
+﻿using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
+using AutoMapper;
+using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -9,12 +16,6 @@ using MyUniversity.UserManager.Repository.DbContext;
 using MyUniversity.UserManager.Repository.Entities.User;
 using MyUniversity.UserManager.Repository.Helpers;
 using MyUniversity.UserManager.Services.Settings;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MyUniversity.UserManager.Services.Implementation
 {
@@ -43,12 +44,12 @@ namespace MyUniversity.UserManager.Services.Implementation
 
             if (userEntity is not null)
             {
-                throw new BadArgumentException($"User with email {userModel.EmailAddress} already exists");
+                throw new RpcException(new Status(StatusCode.Internal, "400"), $"User with email {userModel.EmailAddress} already exists");
             }
 
             var roles = await _dBContext.Roles.ToListAsync();
 
-            var newUserRoles = roles.Where(e => userModel.Roles.Any(role => role == e.Role));
+            var newUserRoles = roles.Where(e => userModel.Roles.Any(role => role == e.Role)).ToList();
 
             // to do: user roles cteation based on creator permissions
 

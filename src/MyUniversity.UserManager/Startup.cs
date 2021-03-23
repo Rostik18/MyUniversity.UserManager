@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,11 +9,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MyUniversity.UserManager.Extensions;
 using MyUniversity.UserManager.Interceptors;
-using MyUniversity.UserManager.Repository.DbContext;
 using MyUniversity.UserManager.Services;
 using MyUniversity.UserManager.Services.Settings;
-using MyUniversity.UserManager.Settings;
-using System.Text;
 
 namespace MyUniversity.UserManager
 {
@@ -82,11 +78,6 @@ namespace MyUniversity.UserManager
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGrpcService<UserController>();
-
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
-                });
             });
         }
     }

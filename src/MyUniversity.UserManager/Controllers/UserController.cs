@@ -1,8 +1,8 @@
-﻿using AutoMapper;
+﻿using System.Threading.Tasks;
+using AutoMapper;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using MyUniversity.UserManager.Models.User;
-using System.Threading.Tasks;
 
 namespace MyUniversity.UserManager.Services
 {
@@ -26,11 +26,11 @@ namespace MyUniversity.UserManager.Services
         {
             var registrationModel = _mapper.Map<RegisterUserModel>(request);
 
-            var registreredModel = await _userService.RegisterUserAsync(registrationModel);
+            var registeredModel = await _userService.RegisterUserAsync(registrationModel);
 
             return new RegistrationReply
             {
-                RegistrationSuccess = registreredModel is not null
+                RegistrationSuccess = registeredModel is not null
             };
         }
 

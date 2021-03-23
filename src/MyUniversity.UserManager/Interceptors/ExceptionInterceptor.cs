@@ -1,9 +1,9 @@
-﻿using Grpc.Core;
+﻿using System;
+using System.Threading.Tasks;
+using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Microsoft.Extensions.Logging;
 using MyUniversity.UserManager.Models.CustomExceptions;
-using System;
-using System.Threading.Tasks;
 
 namespace MyUniversity.UserManager.Interceptors
 {

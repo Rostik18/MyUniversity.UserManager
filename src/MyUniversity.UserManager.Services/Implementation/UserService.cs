@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using MyUniversity.UserManager.Models.CustomExceptions;
 using MyUniversity.UserManager.Models.User;
 using MyUniversity.UserManager.Repository.DbContext;
 using MyUniversity.UserManager.Repository.Entities.User;
@@ -44,7 +43,7 @@ namespace MyUniversity.UserManager.Services.Implementation
 
             if (userEntity is not null)
             {
-                throw new RpcException(new Status(StatusCode.Internal, "400"), $"User with email {userModel.EmailAddress} already exists");
+                throw new RpcException(new Status(StatusCode.AlreadyExists, $"User with email {userModel.EmailAddress} already exists"));
             }
 
             var roles = await _dBContext.Roles.ToListAsync();
@@ -55,7 +54,7 @@ namespace MyUniversity.UserManager.Services.Implementation
 
             if (!newUserRoles.Any())
             {
-                throw new BadArgumentException("Unable to create user without role");
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "Unable to create user without role"));
             }
 
             PasswordHashHelper.CreatePasswordHash(userModel.Password, out var hash, out var salt);
@@ -88,41 +87,17 @@ namespace MyUniversity.UserManager.Services.Implementation
 
             if (user is null)
             {
-                throw new AccessForbiddenException("Invalid email or password");
+                throw new RpcException(new Status(StatusCode.PermissionDenied, "Invalid email or password"));
             }
 
             var isUserVerified = PasswordHashHelper.VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt);
 
             if (!isUserVerified)
             {
-                throw new AccessForbiddenException("Invalid email or password");
+                throw new RpcException(new Status(StatusCode.PermissionDenied, "Invalid email or password"));
             }
 
             return CreateToken(user);
-        }
-
-        public async Task<UserModel> GetUserAsync(int id)
-        {
-            var userEntity = await _dBContext.Users.FirstOrDefaultAsync(x => x.Id == id);
-
-            if (userEntity is null)
-            {
-                throw new ItemNotFoundException($"User with id {id} not found");
-            }
-
-            return _mapper.Map<UserModel>(userEntity);
-        }
-
-        public async Task<UserModel> GetUserAsync(string email)
-        {
-            var userEntity = await _dBContext.Users.FirstOrDefaultAsync(x => x.EmailAddress == email);
-
-            if (userEntity is null)
-            {
-                throw new ItemNotFoundException($"User with email {email} not found");
-            }
-
-            return _mapper.Map<UserModel>(userEntity);
         }
 
         private string CreateToken(UserEntity user)

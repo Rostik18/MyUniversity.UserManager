@@ -7,7 +7,5 @@ namespace MyUniversity.UserManager.Services
     {
         Task<UserModel> RegisterUserAsync(RegisterUserModel userModel);
         Task<string> LoginUserAsync(string email, string password);
-        Task<UserModel> GetUserAsync(int id);
-        Task<UserModel> GetUserAsync(string email);
     }
 }

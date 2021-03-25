@@ -8,7 +8,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MyUniversity.UserManager.Extensions;
-using MyUniversity.UserManager.Interceptors;
 using MyUniversity.UserManager.Services;
 using MyUniversity.UserManager.Services.Settings;
 
@@ -34,7 +33,6 @@ namespace MyUniversity.UserManager
             services.AddGrpc();
             services.AddGrpc(options =>
             {
-                options.Interceptors.Add<ExceptionInterceptor>();
                 options.EnableDetailedErrors = true;
             });
 

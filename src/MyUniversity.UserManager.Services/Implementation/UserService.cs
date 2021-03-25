@@ -39,12 +39,16 @@ namespace MyUniversity.UserManager.Services.Implementation
 
         public async Task<UserModel> RegisterUserAsync(RegisterUserModel userModel)
         {
+            _logger.LogDebug($"Check if the user with email {userModel.EmailAddress} already exists in the system");
+
             var userEntity = await _dBContext.Users.FirstOrDefaultAsync(x => x.EmailAddress == userModel.EmailAddress);
 
             if (userEntity is not null)
             {
                 throw new RpcException(new Status(StatusCode.AlreadyExists, $"User with email {userModel.EmailAddress} already exists"));
             }
+
+            _logger.LogDebug("Validation of new user roles");
 
             var roles = await _dBContext.Roles.ToListAsync();
 
@@ -56,6 +60,8 @@ namespace MyUniversity.UserManager.Services.Implementation
             {
                 throw new RpcException(new Status(StatusCode.InvalidArgument, "Unable to create user without role"));
             }
+
+            _logger.LogDebug("Creating new user");
 
             PasswordHashHelper.CreatePasswordHash(userModel.Password, out var hash, out var salt);
 
@@ -80,6 +86,8 @@ namespace MyUniversity.UserManager.Services.Implementation
 
         public async Task<string> LoginUserAsync(string email, string password)
         {
+            _logger.LogDebug($"Search user with email {email}");
+
             var user = await _dBContext.Users
                 .Include(x => x.UserRoles)
                 .ThenInclude(x => x.Role)
@@ -90,12 +98,16 @@ namespace MyUniversity.UserManager.Services.Implementation
                 throw new RpcException(new Status(StatusCode.PermissionDenied, "Invalid email or password"));
             }
 
+            _logger.LogDebug("Validation of user access");
+
             var isUserVerified = PasswordHashHelper.VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt);
 
             if (!isUserVerified)
             {
                 throw new RpcException(new Status(StatusCode.PermissionDenied, "Invalid email or password"));
             }
+
+            _logger.LogDebug("Creating user token");
 
             return CreateToken(user);
         }

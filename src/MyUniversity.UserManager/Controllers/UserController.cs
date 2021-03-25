@@ -24,9 +24,15 @@ namespace MyUniversity.UserManager.Services
 
         public override async Task<RegistrationReply> RegisterUser(RegistrationRequest request, ServerCallContext context)
         {
+            _logger.LogDebug("Mapping user registration model");
+
             var registrationModel = _mapper.Map<RegisterUserModel>(request);
 
+            _logger.LogDebug("Registering new user");
+
             var registeredModel = await _userService.RegisterUserAsync(registrationModel);
+
+            _logger.LogDebug("Sending registration success response");
 
             return new RegistrationReply
             {
@@ -36,10 +42,16 @@ namespace MyUniversity.UserManager.Services
 
         public override async Task<LoginReply> LoginUser(LoginRequest request, ServerCallContext context)
         {
+            _logger.LogDebug($"User with email {request.EmailAddress} logging into the system");
+
+            var userToken = await _userService.LoginUserAsync(request.EmailAddress, request.Password);
+
+            _logger.LogDebug("Sending login response");
+
             return new LoginReply
             {
                 EmailAddress = request.EmailAddress,
-                Token = await _userService.LoginUserAsync(request.EmailAddress, request.Password)
+                Token = userToken
             };
         }
     }

@@ -36,7 +36,7 @@ namespace MyUniversity.UserManager.Repository.DbConfigurations
                 .HasOne(e => e.University)
                 .WithMany(e => e.Users)
                 .HasForeignKey(e => e.TenantId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.Property(e => e.PasswordHash)
                 .HasMaxLength(64)

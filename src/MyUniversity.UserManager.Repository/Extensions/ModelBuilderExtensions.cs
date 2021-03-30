@@ -43,7 +43,19 @@ namespace MyUniversity.UserManager.Repository.Extensions
                         LastName = "Admin",
                         EmailAddress = "Super.Admin@gmail.com",
                         PhoneNumber = "380 50 123 4567",
-                        TenantId = "11116258-9207-4bdc-b101-fb560cc8cb20",
+                        TenantId = null,
+                        IsSoftDeleted = false,
+                        PasswordHash = hash,
+                        PasswordSalt = salt
+                    },
+                    new UserEntity
+                    {
+                        Id = 2,
+                        FirstName = "UserManager",
+                        LastName = "Service",
+                        EmailAddress = "UserManager.Service@gmail.com",
+                        PhoneNumber = "000",
+                        TenantId = null,
                         IsSoftDeleted = false,
                         PasswordHash = hash,
                         PasswordSalt = salt
@@ -53,7 +65,10 @@ namespace MyUniversity.UserManager.Repository.Extensions
             modelBuilder
                 .Entity<UserRoleEntity>()
                 .HasData(
-                    new UserRoleEntity { RoleId = 1, UserId = 1 }
+                    new UserRoleEntity { RoleId = 1, UserId = 1 },
+                    new UserRoleEntity { RoleId = 3, UserId = 1 },
+                    new UserRoleEntity { RoleId = 4, UserId = 1 },
+                    new UserRoleEntity { RoleId = 2, UserId = 2 }
                 );
         }
     }

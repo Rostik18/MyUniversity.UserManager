@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -10,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using MyUniversity.UserManager.Models.Roles;
 using MyUniversity.UserManager.Models.User;
 using MyUniversity.UserManager.Repository.DbContext;
 using MyUniversity.UserManager.Repository.Entities.User;
@@ -24,20 +26,23 @@ namespace MyUniversity.UserManager.Services.Implementation
         private readonly UMDBContext _dBContext;
         private readonly IMapper _mapper;
         private readonly JwtSettings _jwtSettings;
+        private readonly ITokenDecoder _tokenDecoder;
 
         public UserService(
             ILogger<UserService> logger,
             UMDBContext dBContext,
             IMapper mapper,
-            IOptions<JwtSettings> jwtSettings)
+            IOptions<JwtSettings> jwtSettings,
+            ITokenDecoder tokenDecoder)
         {
             _logger = logger;
             _dBContext = dBContext;
             _mapper = mapper;
             _jwtSettings = jwtSettings.Value;
+            _tokenDecoder = tokenDecoder;
         }
 
-        public async Task<UserModel> RegisterUserAsync(RegisterUserModel userModel)
+        public async Task<UserModel> RegisterUserAsync(RegisterUserModel userModel, string accessToken)
         {
             _logger.LogDebug($"Check if the user with email {userModel.EmailAddress} already exists in the system");
 
@@ -50,20 +55,23 @@ namespace MyUniversity.UserManager.Services.Implementation
 
             _logger.LogDebug("Validation of new user roles");
 
-            var roles = await _dBContext.Roles.ToListAsync();
+            var newUserRoles = await _dBContext.Roles.Where(e => userModel.Roles.Any(roleId => roleId == e.Id)).ToListAsync();
 
-            var newUserRoles = roles.Where(e => userModel.Roles.Any(role => role == e.Role)).ToList();
-
-            // to do: user roles cteation based on creator permissions
-
-            if (!newUserRoles.Any())
+            if (newUserRoles.Count != userModel.Roles.Count())
             {
-                throw new RpcException(new Status(StatusCode.InvalidArgument, "Unable to create user without role"));
+                throw new RpcException(new Status(StatusCode.NotFound, "Not all assigned roles were found"));
+            }
+
+            if (!CanUserCreateUserWithRoles(newUserRoles, accessToken))
+            {
+                throw new RpcException(new Status(StatusCode.PermissionDenied, "You do not have permissions to create this user"));
             }
 
             _logger.LogDebug("Creating new user");
 
             PasswordHashHelper.CreatePasswordHash(userModel.Password, out var hash, out var salt);
+
+            //todo: UniversityAdmin and lower should belong to tenant.
 
             userEntity = new UserEntity
             {
@@ -72,7 +80,7 @@ namespace MyUniversity.UserManager.Services.Implementation
                 EmailAddress = userModel.EmailAddress,
                 PhoneNumber = userModel.PhoneNumber,
                 TenantId = userModel.TenantId,
-                UserRoles = newUserRoles.Select(x => new UserRoleEntity { RoleId = x.Id }),
+                UserRoles = newUserRoles.Select(x => new UserRoleEntity { RoleId = x.Id }).ToList(),
                 IsSoftDeleted = false,
                 PasswordHash = hash,
                 PasswordSalt = salt
@@ -116,17 +124,20 @@ namespace MyUniversity.UserManager.Services.Implementation
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtSettings.Secret);
+
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.EmailAddress),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.EmailAddress),
+                new Claim("id", user.Id.ToString()),
+                new Claim("tenantId", user.TenantId ?? "")
+            };
+            claims.AddRange(user.UserRoles.Select(x => new Claim("role", x.Role.Role)));
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(JwtRegisteredClaimNames.Sub, user.EmailAddress),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(JwtRegisteredClaimNames.Email, user.EmailAddress),
-                    new Claim("id", user.Id.ToString()),
-                    new Claim("tenantId", user.TenantId),
-                    new Claim("roles", string.Join(',', user.UserRoles.Select(x => x.Role.Role))),
-                }),
+                Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.AddDays(_jwtSettings.ExpirationDays),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
@@ -134,6 +145,25 @@ namespace MyUniversity.UserManager.Services.Implementation
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
             return tokenHandler.WriteToken(token);
+        }
+
+        private bool CanUserCreateUserWithRoles(IReadOnlyCollection<RoleEntity> newUserRoles, string accessToken)
+        {
+            var highestUserRole = _tokenDecoder.GetHighestUserRole(accessToken);
+
+            switch (highestUserRole)
+            {
+                case RolesConstants.SuperAdmin:
+                case RolesConstants.Service:
+                case RolesConstants.UniversityAdmin
+                    when newUserRoles.All(x => x.Role != RolesConstants.SuperAdmin) &&
+                         newUserRoles.All(x => x.Role != RolesConstants.Service):
+                case RolesConstants.Teacher
+                    when newUserRoles.All(x => x.Role == RolesConstants.Student):
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 }

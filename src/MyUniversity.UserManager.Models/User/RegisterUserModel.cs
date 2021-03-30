@@ -11,6 +11,6 @@ namespace MyUniversity.UserManager.Models.User
         public string TenantId { get; set; }
         public string Password { get; set; }
 
-        public IEnumerable<string> Roles { get; set; }
+        public IEnumerable<int> Roles { get; set; }
     }
 }

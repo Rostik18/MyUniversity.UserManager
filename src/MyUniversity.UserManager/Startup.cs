@@ -7,8 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using MyUniversity.UserManager.Controllers;
 using MyUniversity.UserManager.Extensions;
-using MyUniversity.UserManager.Services;
 using MyUniversity.UserManager.Services.Settings;
 
 namespace MyUniversity.UserManager

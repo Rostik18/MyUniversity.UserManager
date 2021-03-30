@@ -12,11 +12,8 @@ namespace MyUniversity.UserManager.Models.User
         public string EmailAddress { get; set; }
         public string PhoneNumber { get; set; }
         public string TenantId { get; set; }
-        public bool IsSoftDeleted { get; set; }
-        public byte[] PasswordHash { get; set; }
-        public byte[] PasswordSalt { get; set; }
 
-        public IEnumerable<RoleModel> UserRoles { get; set; }
+        public IEnumerable<RoleModel> Roles { get; set; }
         public UniversityModel University { get; set; }
     }
 }

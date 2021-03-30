@@ -2,9 +2,11 @@
 using AutoMapper;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using MyUniversity.UserManager.Models.Constants;
 using MyUniversity.UserManager.Models.User;
+using MyUniversity.UserManager.Services;
 
-namespace MyUniversity.UserManager.Services
+namespace MyUniversity.UserManager.Controllers
 {
     public class UserController : User.UserBase
     {
@@ -24,13 +26,20 @@ namespace MyUniversity.UserManager.Services
 
         public override async Task<RegistrationReply> RegisterUser(RegistrationRequest request, ServerCallContext context)
         {
+            var accessToken = context.RequestHeaders.GetValue(HeaderKeys.AccessToken);
+
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new RpcException(new Status(StatusCode.PermissionDenied, "Unauthorized action"));
+            }
+
             _logger.LogDebug("Mapping user registration model");
 
             var registrationModel = _mapper.Map<RegisterUserModel>(request);
 
             _logger.LogDebug("Registering new user");
 
-            var registeredModel = await _userService.RegisterUserAsync(registrationModel);
+            var registeredModel = await _userService.RegisterUserAsync(registrationModel, accessToken);
 
             _logger.LogDebug("Sending registration success response");
 

@@ -58,7 +58,7 @@ namespace MyUniversity.UserManager
                 };
             });
 
-            services.AddDBContext();
+            services.AddDbContext();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -70,12 +70,11 @@ namespace MyUniversity.UserManager
             }
 
             app.UseRouting();
-            // to do: 
-            //app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGrpcService<UserController>();
+                endpoints.MapGrpcService<RoleController>();
             });
         }
     }

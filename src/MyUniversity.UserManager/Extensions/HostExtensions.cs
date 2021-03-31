@@ -25,9 +25,10 @@ namespace MyUniversity.UserManager.Extensions
         {
             services.AddScoped<IUserService, UserService>();
             services.AddSingleton<ITokenDecoder, TokenDecoder>();
+            services.AddScoped<IRoleService, RoleService>();
         }
 
-        public static void AddDBContext(this IServiceCollection services)
+        public static void AddDbContext(this IServiceCollection services)
         {
             var dbSettings = services.BuildServiceProvider().GetService<IOptions<DatabaseSettings>>().Value;
             services.AddDbContext<UMDBContext>(options => options.UseSqlServer(dbSettings.ConnectionString));

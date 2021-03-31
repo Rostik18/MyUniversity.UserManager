@@ -18,6 +18,8 @@ namespace MyUniversity.UserManager.MapperProfiles
             CreateMap<UserEntity, UserModel>()
                 .ForMember(x => x.Roles, x =>
                     x.MapFrom(xx => xx.UserRoles.Select(xxx => new RoleModel { Id = xxx.RoleId, Role = xxx.Role.Role })));
+
+            CreateMap<RoleEntity, RoleModel>();
         }
     }
 }

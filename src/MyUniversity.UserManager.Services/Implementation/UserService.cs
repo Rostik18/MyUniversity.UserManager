@@ -67,11 +67,20 @@ namespace MyUniversity.UserManager.Services.Implementation
                 throw new RpcException(new Status(StatusCode.PermissionDenied, "You do not have permissions to create this user"));
             }
 
+            _logger.LogDebug("Validation of new user tenant");
+
+            var newUserTenant = string.IsNullOrWhiteSpace(userModel.UniversityId)
+                ? null
+                : await _dBContext.Universities.FirstOrDefaultAsync(x => x.TenantId == userModel.UniversityId);
+
+            if (!CanUserExistWithoutTenant(newUserRoles) && newUserTenant is null)
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "This user cannot exist without university"));
+            }
+
             _logger.LogDebug("Creating new user");
 
             PasswordHashHelper.CreatePasswordHash(userModel.Password, out var hash, out var salt);
-
-            //todo: UniversityAdmin and lower should belong to tenant.
 
             userEntity = new UserEntity
             {
@@ -79,7 +88,7 @@ namespace MyUniversity.UserManager.Services.Implementation
                 LastName = userModel.LastName,
                 EmailAddress = userModel.EmailAddress,
                 PhoneNumber = userModel.PhoneNumber,
-                TenantId = userModel.TenantId,
+                TenantId = newUserTenant?.TenantId,
                 UserRoles = newUserRoles.Select(x => new UserRoleEntity { RoleId = x.Id }).ToList(),
                 IsSoftDeleted = false,
                 PasswordHash = hash,
@@ -164,6 +173,14 @@ namespace MyUniversity.UserManager.Services.Implementation
                 default:
                     return false;
             }
+        }
+
+        private bool CanUserExistWithoutTenant(IEnumerable<RoleEntity> newUserRoles)
+        {
+            return !newUserRoles.Any(x =>
+                x.Role == RolesConstants.UniversityAdmin ||
+                x.Role == RolesConstants.Teacher ||
+                x.Role == RolesConstants.Student);
         }
     }
 }

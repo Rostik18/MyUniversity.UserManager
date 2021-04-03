@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using AutoMapper;
 using MyUniversity.UserManager.Models.Roles;
+using MyUniversity.UserManager.Models.University;
 using MyUniversity.UserManager.Models.User;
 
 namespace MyUniversity.UserManager.MapperProfiles
@@ -13,6 +14,10 @@ namespace MyUniversity.UserManager.MapperProfiles
                 .ForMember(x => x.Roles, x => x.MapFrom(xx => xx.Roles.ToList()));
 
             CreateMap<RoleModel, RoleReply>();
+            CreateMap<UserModel, UserModelReply>();
+            CreateMap<UniversityModel, UniversityModelReply>()
+                .ForMember(x => x.Id, x => x.MapFrom(xx => xx.TenantId));
+            CreateMap<RoleModel, RoleModelReply>();
         }
     }
 }

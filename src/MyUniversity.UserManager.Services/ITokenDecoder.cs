@@ -6,5 +6,6 @@ namespace MyUniversity.UserManager.Services
     {
         public IEnumerable<string> GetUserRoles(string accessToken);
         public string GetHighestUserRole(string accessToken);
+        public string GetUserTenantId(string accessToken);
     }
 }

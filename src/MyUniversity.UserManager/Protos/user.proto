@@ -5,6 +5,8 @@ option csharp_namespace = "MyUniversity.UserManager";
 service User {
   rpc RegisterUser (RegistrationRequest) returns (RegistrationReply);
   rpc LoginUser (LoginRequest) returns (LoginReply);
+  rpc GetAllUsers (GetUsersRequest) returns (GetAllUsersReply);
+  rpc GetUserById (GetUserRequest) returns (UserModelReply);
 }
 
 message RegistrationRequest {
@@ -29,4 +31,36 @@ message LoginRequest {
 message LoginReply {
   string emailAddress  = 1;
   string token = 2;
+}
+
+message GetUsersRequest {}
+message GetUserRequest {
+	string id = 1;
+}
+
+message GetAllUsersReply {
+	repeated UserModelReply users = 1;
+}
+
+message UserModelReply {
+	string id = 1;
+	string firstName = 2;
+	string lastName = 3;
+	string emailAddress = 4;
+	string phoneNumber = 5;
+	UniversityModelReply university = 6;
+	repeated RoleModelReply roles = 8;
+}
+
+message UniversityModelReply {
+	string id = 1;
+	string name = 2;
+	string address = 3;
+	string emailAddress = 4;
+	string phoneNumber = 5;
+}
+
+message RoleModelReply {
+	string id = 1;
+	string role = 2;
 }

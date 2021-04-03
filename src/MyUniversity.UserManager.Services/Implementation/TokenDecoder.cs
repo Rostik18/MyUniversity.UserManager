@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -22,19 +23,7 @@ namespace MyUniversity.UserManager.Services.Implementation
 
         public IEnumerable<string> GetUserRoles(string accessToken)
         {
-            accessToken = accessToken.Replace("bearer ", "");
-
-            var validations = new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_jwtSettings.Secret)),
-                ValidateIssuer = false,
-                ValidateAudience = false,
-                RequireExpirationTime = false,
-                ValidateLifetime = true
-            };
-
-            var claims = _jwtSecurityTokenHandler.ValidateToken(accessToken, validations, out _);
+            var claims = DecryptToken(accessToken);
 
             var roles = claims.Claims.Where(x => x.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Select(x => x.Value.Split(',').ToList()).FirstOrDefault();
 
@@ -52,6 +41,32 @@ namespace MyUniversity.UserManager.Services.Implementation
             if (roles.Contains(RolesConstants.Student)) return RolesConstants.Student;
 
             return null;
+        }
+
+        public string GetUserTenantId(string accessToken)
+        {
+            var claims = DecryptToken(accessToken);
+
+            var tenantId = claims.Claims.FirstOrDefault(x => x.Type == "tenantId")?.Value;
+
+            return tenantId;
+        }
+
+        private ClaimsPrincipal DecryptToken(string accessToken)
+        {
+            accessToken = accessToken.Replace("bearer ", "");
+
+            var validations = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_jwtSettings.Secret)),
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                RequireExpirationTime = false,
+                ValidateLifetime = true
+            };
+
+            return _jwtSecurityTokenHandler.ValidateToken(accessToken, validations, out _);
         }
     }
 }

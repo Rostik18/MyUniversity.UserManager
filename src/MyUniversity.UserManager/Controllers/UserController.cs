@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
@@ -61,6 +62,29 @@ namespace MyUniversity.UserManager.Controllers
             {
                 EmailAddress = request.EmailAddress,
                 Token = userToken
+            };
+        }
+
+        public override async Task<GetAllUsersReply> GetAllUsers(GetUsersRequest request, ServerCallContext context)
+        {
+            var accessToken = context.RequestHeaders.GetValue(HeaderKeys.AccessToken);
+
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new RpcException(new Status(StatusCode.PermissionDenied, "Unauthorized action"));
+            }
+
+            _logger.LogDebug("Getting all available users");
+
+            var availableUsers = await _userService.GetAllUsersAsync(accessToken);
+
+            var users = availableUsers.Select(_mapper.Map<UserModelReply>);
+
+            _logger.LogDebug("Sending get all users response");
+
+            return new GetAllUsersReply
+            {
+                Users = { users }
             };
         }
     }

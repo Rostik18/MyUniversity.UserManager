@@ -129,6 +129,79 @@ namespace MyUniversity.UserManager.Services.Implementation
             return CreateToken(user);
         }
 
+        public async Task<IEnumerable<UserModel>> GetAllUsersAsync(string accessToken)
+        {
+            _logger.LogDebug("Preparing db query");
+
+            var query = CreateGetUsersQuery(accessToken);
+
+            _logger.LogDebug("Executing db query");
+
+            var users = await query.ToListAsync();
+
+            _logger.LogDebug($"Were found {users.Count} users");
+
+            return users.Select(_mapper.Map<UserModel>);
+        }
+
+        public async Task<UserModel> GetUserByIdAsync(int id, string accessToken)
+        {
+            _logger.LogDebug("Preparing db query");
+
+            var query = CreateGetUsersQuery(accessToken);
+
+            _logger.LogDebug("Executing db query");
+
+            var user = await query.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (user == null)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, $"User with id {id} not found"));
+            }
+
+            return _mapper.Map<UserModel>(user);
+        }
+
+        private IQueryable<UserEntity> CreateGetUsersQuery(string accessToken)
+        {
+            _logger.LogDebug("Find out what roles user can read");
+
+            var accessRoles = WhichRolesUserHasAccessTo(accessToken).ToList();
+
+            if (!accessRoles.Any())
+            {
+                throw new RpcException(new Status(StatusCode.PermissionDenied, "Access denied"));
+            }
+
+            _logger.LogDebug("Searching all available users");
+
+            var query = _dBContext.Users
+                .Include(x => x.UserRoles)
+                .ThenInclude(x => x.Role)
+                .Include(x => x.University)
+                .Where(x => x.UserRoles.Any(xx => accessRoles.Contains(xx.Role.Role)));
+
+            var userHighestRole = _tokenDecoder.GetHighestUserRole(accessToken);
+
+            if (userHighestRole == RolesConstants.UniversityAdmin ||
+                userHighestRole == RolesConstants.Teacher ||
+                userHighestRole == RolesConstants.Student)
+            {
+                _logger.LogDebug("Including user university");
+
+                var tenantId = _tokenDecoder.GetUserTenantId(accessToken);
+
+                if (string.IsNullOrWhiteSpace(tenantId))
+                {
+                    throw new RpcException(new Status(StatusCode.NotFound, "Unable to find user tenant"));
+                }
+
+                query = query.Where(x => x.TenantId == tenantId);
+            }
+
+            return query;
+        }
+
         private string CreateToken(UserEntity user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -181,6 +254,34 @@ namespace MyUniversity.UserManager.Services.Implementation
                 x.Role == RolesConstants.UniversityAdmin ||
                 x.Role == RolesConstants.Teacher ||
                 x.Role == RolesConstants.Student);
+        }
+
+        private IEnumerable<string> WhichRolesUserHasAccessTo(string accessToken)
+        {
+            var highestUserRole = _tokenDecoder.GetHighestUserRole(accessToken);
+
+            switch (highestUserRole)
+            {
+                case RolesConstants.SuperAdmin:
+                case RolesConstants.Service:
+                    return new[]
+                    {
+                        RolesConstants.SuperAdmin, RolesConstants.Service, RolesConstants.UniversityAdmin,
+                        RolesConstants.Teacher, RolesConstants.Student
+                    };
+                case RolesConstants.UniversityAdmin:
+                    return new[]
+                    {
+                        RolesConstants.UniversityAdmin, RolesConstants.Teacher, RolesConstants.Student
+                    };
+                case RolesConstants.Teacher:
+                    return new[]
+                    {
+                        RolesConstants.Teacher, RolesConstants.Student
+                    };
+                default:
+                    return Array.Empty<string>();
+            }
         }
     }
 }

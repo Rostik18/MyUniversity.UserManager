@@ -25,6 +25,7 @@ namespace MyUniversity.UserManager.Extensions
         {
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IUniversityService, UniversityService>();
             services.AddSingleton<ITokenDecoder, TokenDecoder>();
             services.AddSingleton<IPermissionResolver, PermissionResolver>();
         }

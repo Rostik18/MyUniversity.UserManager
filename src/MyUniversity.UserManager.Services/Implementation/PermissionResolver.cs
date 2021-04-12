@@ -69,5 +69,28 @@ namespace MyUniversity.UserManager.Services.Implementation
                     return Array.Empty<string>();
             }
         }
+
+        public bool CanUserCreateUniversity(string accessToken)
+        {
+            return _tokenDecoder.GetHighestUserRole(accessToken) == RolesConstants.SuperAdmin;
+        }
+
+        public bool CanUserReadAllUniversities(string accessToken)
+        {
+            var highestRole = _tokenDecoder.GetHighestUserRole(accessToken);
+
+            return highestRole == RolesConstants.SuperAdmin ||
+                   highestRole == RolesConstants.Service;
+        }
+
+        public bool CanUserUpdateUniversity(string accessToken)
+        {
+            return _tokenDecoder.GetHighestUserRole(accessToken) == RolesConstants.SuperAdmin;
+        }
+
+        public bool CanUserDeleteUniversity(string accessToken)
+        {
+            return _tokenDecoder.GetHighestUserRole(accessToken) == RolesConstants.SuperAdmin;
+        }
     }
 }

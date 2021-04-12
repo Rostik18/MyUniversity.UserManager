@@ -2,6 +2,9 @@
 {
     public class UniversityModel
     {
+        /// <summary>
+        /// Is a unique identifier
+        /// </summary>
         public string TenantId { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }

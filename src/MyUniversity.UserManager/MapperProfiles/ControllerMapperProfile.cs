@@ -4,6 +4,7 @@ using MyUniversity.UserManager.Models.Roles;
 using MyUniversity.UserManager.Models.University;
 using MyUniversity.UserManager.Models.User;
 using MyUniversity.UserManager.Role;
+using MyUniversity.UserManager.University;
 using MyUniversity.UserManager.User;
 
 namespace MyUniversity.UserManager.MapperProfiles
@@ -17,9 +18,17 @@ namespace MyUniversity.UserManager.MapperProfiles
 
             CreateMap<RoleModel, RoleReply>();
             CreateMap<UserModel, UserModelReply>();
-            CreateMap<UniversityModel, UniversityModelReply>()
+            CreateMap<UniversityModel, User.UniversityModelReply>()
                 .ForMember(x => x.Id, x => x.MapFrom(xx => xx.TenantId));
             CreateMap<RoleModel, RoleModelReply>();
+
+            CreateMap<UniversityModel, University.UniversityModelReply>()
+                .ForMember(x => x.Id, x => x.MapFrom(xx => xx.TenantId));
+            CreateMap<CreateUniversityRequest, CreateUniversityModel>();
+            CreateMap<UpdateUniversityRequest, UpdateUniversityModel>();
+
+
+
         }
     }
 }

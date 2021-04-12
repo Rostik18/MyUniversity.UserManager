@@ -75,6 +75,7 @@ namespace MyUniversity.UserManager
             {
                 endpoints.MapGrpcService<UserController>();
                 endpoints.MapGrpcService<RoleController>();
+                endpoints.MapGrpcService<UniversityController>();
             });
         }
     }

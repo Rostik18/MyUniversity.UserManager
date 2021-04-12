@@ -24,8 +24,9 @@ namespace MyUniversity.UserManager.Extensions
         public static void AddCustomServices(this IServiceCollection services)
         {
             services.AddScoped<IUserService, UserService>();
-            services.AddSingleton<ITokenDecoder, TokenDecoder>();
             services.AddScoped<IRoleService, RoleService>();
+            services.AddSingleton<ITokenDecoder, TokenDecoder>();
+            services.AddSingleton<IPermissionResolver, PermissionResolver>();
         }
 
         public static void AddDbContext(this IServiceCollection services)

@@ -27,19 +27,22 @@ namespace MyUniversity.UserManager.Services.Implementation
         private readonly IMapper _mapper;
         private readonly JwtSettings _jwtSettings;
         private readonly ITokenDecoder _tokenDecoder;
+        private readonly IPermissionResolver _permissionResolver;
 
         public UserService(
             ILogger<UserService> logger,
             UMDBContext dBContext,
             IMapper mapper,
             IOptions<JwtSettings> jwtSettings,
-            ITokenDecoder tokenDecoder)
+            ITokenDecoder tokenDecoder,
+            IPermissionResolver permissionResolver)
         {
             _logger = logger;
             _dBContext = dBContext;
             _mapper = mapper;
             _jwtSettings = jwtSettings.Value;
             _tokenDecoder = tokenDecoder;
+            _permissionResolver = permissionResolver;
         }
 
         public async Task<UserModel> RegisterUserAsync(RegisterUserModel userModel, string accessToken)
@@ -62,7 +65,7 @@ namespace MyUniversity.UserManager.Services.Implementation
                 throw new RpcException(new Status(StatusCode.NotFound, "Not all assigned roles were found"));
             }
 
-            if (!CanUserCreateUserWithRoles(newUserRoles, accessToken))
+            if (!_permissionResolver.CanUserCreateUserWithRoles(newUserRoles, accessToken))
             {
                 throw new RpcException(new Status(StatusCode.PermissionDenied, "You do not have permissions to create this user"));
             }
@@ -73,7 +76,7 @@ namespace MyUniversity.UserManager.Services.Implementation
                 ? null
                 : await _dBContext.Universities.FirstOrDefaultAsync(x => x.TenantId == userModel.UniversityId);
 
-            if (!CanUserExistWithoutTenant(newUserRoles) && newUserTenant is null)
+            if (!_permissionResolver.CanUserExistWithoutTenant(newUserRoles) && newUserTenant is null)
             {
                 throw new RpcException(new Status(StatusCode.InvalidArgument, "This user cannot exist without university"));
             }
@@ -166,7 +169,7 @@ namespace MyUniversity.UserManager.Services.Implementation
         {
             _logger.LogDebug("Find out what roles user can read");
 
-            var accessRoles = WhichRolesUserHasAccessTo(accessToken).ToList();
+            var accessRoles = _permissionResolver.WhichRolesUserHasAccessTo(accessToken).ToList();
 
             if (!accessRoles.Any())
             {
@@ -227,61 +230,6 @@ namespace MyUniversity.UserManager.Services.Implementation
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
             return tokenHandler.WriteToken(token);
-        }
-
-        private bool CanUserCreateUserWithRoles(IReadOnlyCollection<RoleEntity> newUserRoles, string accessToken)
-        {
-            var highestUserRole = _tokenDecoder.GetHighestUserRole(accessToken);
-
-            switch (highestUserRole)
-            {
-                case RolesConstants.SuperAdmin:
-                case RolesConstants.Service:
-                case RolesConstants.UniversityAdmin
-                    when newUserRoles.All(x => x.Role != RolesConstants.SuperAdmin) &&
-                         newUserRoles.All(x => x.Role != RolesConstants.Service):
-                case RolesConstants.Teacher
-                    when newUserRoles.All(x => x.Role == RolesConstants.Student):
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        private bool CanUserExistWithoutTenant(IEnumerable<RoleEntity> newUserRoles)
-        {
-            return !newUserRoles.Any(x =>
-                x.Role == RolesConstants.UniversityAdmin ||
-                x.Role == RolesConstants.Teacher ||
-                x.Role == RolesConstants.Student);
-        }
-
-        private IEnumerable<string> WhichRolesUserHasAccessTo(string accessToken)
-        {
-            var highestUserRole = _tokenDecoder.GetHighestUserRole(accessToken);
-
-            switch (highestUserRole)
-            {
-                case RolesConstants.SuperAdmin:
-                case RolesConstants.Service:
-                    return new[]
-                    {
-                        RolesConstants.SuperAdmin, RolesConstants.Service, RolesConstants.UniversityAdmin,
-                        RolesConstants.Teacher, RolesConstants.Student
-                    };
-                case RolesConstants.UniversityAdmin:
-                    return new[]
-                    {
-                        RolesConstants.UniversityAdmin, RolesConstants.Teacher, RolesConstants.Student
-                    };
-                case RolesConstants.Teacher:
-                    return new[]
-                    {
-                        RolesConstants.Teacher, RolesConstants.Student
-                    };
-                default:
-                    return Array.Empty<string>();
-            }
         }
     }
 }

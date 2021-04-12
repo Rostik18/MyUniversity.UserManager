@@ -87,5 +87,25 @@ namespace MyUniversity.UserManager.Controllers
                 Users = { users }
             };
         }
+
+        public override async Task<UserModelReply> GetUserById(GetUserRequest request, ServerCallContext context)
+        {
+            var accessToken = context.RequestHeaders.GetValue(HeaderKeys.AccessToken);
+
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new RpcException(new Status(StatusCode.PermissionDenied, "Unauthorized action"));
+            }
+
+            _logger.LogDebug($"Getting user by id {request.Id}");
+
+            var availableUser = await _userService.GetUserByIdAsync(request.Id, accessToken);
+
+            var user = _mapper.Map<UserModelReply>(availableUser);
+
+            _logger.LogDebug("Sending get user by id response");
+
+            return user;
+        }
     }
 }

@@ -6,10 +6,11 @@ using Microsoft.Extensions.Logging;
 using MyUniversity.UserManager.Models.Constants;
 using MyUniversity.UserManager.Models.User;
 using MyUniversity.UserManager.Services;
+using MyUniversity.UserManager.User;
 
 namespace MyUniversity.UserManager.Controllers
 {
-    public class UserController : User.UserBase
+    public class UserController : User.User.UserBase
     {
         private readonly ILogger<UserController> _logger;
         private readonly IUserService _userService;

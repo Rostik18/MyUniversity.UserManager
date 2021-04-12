@@ -4,11 +4,12 @@ using AutoMapper;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using MyUniversity.UserManager.Models.Constants;
+using MyUniversity.UserManager.Role;
 using MyUniversity.UserManager.Services;
 
 namespace MyUniversity.UserManager.Controllers
 {
-    public class RoleController : Role.RoleBase
+    public class RoleController : Role.Role.RoleBase
     {
         private readonly ILogger<RoleController> _logger;
         private readonly IRoleService _roleService;

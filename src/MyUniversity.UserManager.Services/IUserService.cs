@@ -10,5 +10,7 @@ namespace MyUniversity.UserManager.Services
         Task<string> LoginUserAsync(string email, string password);
         Task<IEnumerable<UserModel>> GetAllUsersAsync(string accessToken);
         Task<UserModel> GetUserByIdAsync(int id, string accessToken);
+        Task<UserModel> UpdateUserAsync(UpdateUserModel updateModel, string accessToken);
+        Task<bool> DeleteUserByIdAsync(int id, string accessToken);
     }
 }

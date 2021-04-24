@@ -16,7 +16,7 @@ namespace MyUniversity.UserManager.Repository.Entities.User
         public byte[] PasswordHash { get; set; }
         public byte[] PasswordSalt { get; set; }
 
-        public IEnumerable<UserRoleEntity> UserRoles { get; set; }
+        public List<UserRoleEntity> UserRoles { get; set; }
         public UniversityEntity University { get; set; }
     }
 }

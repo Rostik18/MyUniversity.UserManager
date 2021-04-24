@@ -52,6 +52,15 @@ namespace MyUniversity.UserManager.Services.Implementation
             return tenantId;
         }
 
+        public int GetUserId(string accessToken)
+        {
+            var claims = DecryptToken(accessToken);
+
+            var userId = int.Parse(claims.Claims.FirstOrDefault(x => x.Type == "id")?.Value);
+
+            return userId;
+        }
+
         private ClaimsPrincipal DecryptToken(string accessToken)
         {
             accessToken = accessToken.Replace("bearer ", "");

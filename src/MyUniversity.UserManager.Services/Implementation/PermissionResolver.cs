@@ -15,6 +15,8 @@ namespace MyUniversity.UserManager.Services.Implementation
             _tokenDecoder = tokenDecoder;
         }
 
+        #region User
+
         public bool CanUserCreateUserWithRoles(IReadOnlyCollection<RoleEntity> newUserRoles, string accessToken)
         {
             var highestUserRole = _tokenDecoder.GetHighestUserRole(accessToken);
@@ -41,6 +43,37 @@ namespace MyUniversity.UserManager.Services.Implementation
                 x.Role == RolesConstants.Teacher ||
                 x.Role == RolesConstants.Student);
         }
+
+        #endregion
+
+        #region University
+
+        public bool CanUserCreateUniversity(string accessToken)
+        {
+            return _tokenDecoder.GetHighestUserRole(accessToken) == RolesConstants.SuperAdmin;
+        }
+
+        public bool CanUserReadAllUniversities(string accessToken)
+        {
+            var highestRole = _tokenDecoder.GetHighestUserRole(accessToken);
+
+            return highestRole == RolesConstants.SuperAdmin ||
+                   highestRole == RolesConstants.Service;
+        }
+
+        public bool CanUserUpdateUniversity(string accessToken)
+        {
+            return _tokenDecoder.GetHighestUserRole(accessToken) == RolesConstants.SuperAdmin;
+        }
+
+        public bool CanUserDeleteUniversity(string accessToken)
+        {
+            return _tokenDecoder.GetHighestUserRole(accessToken) == RolesConstants.SuperAdmin;
+        }
+
+        #endregion
+
+        #region Roles
 
         public IEnumerable<string> WhichRolesUserHasAccessTo(string accessToken)
         {
@@ -70,27 +103,6 @@ namespace MyUniversity.UserManager.Services.Implementation
             }
         }
 
-        public bool CanUserCreateUniversity(string accessToken)
-        {
-            return _tokenDecoder.GetHighestUserRole(accessToken) == RolesConstants.SuperAdmin;
-        }
-
-        public bool CanUserReadAllUniversities(string accessToken)
-        {
-            var highestRole = _tokenDecoder.GetHighestUserRole(accessToken);
-
-            return highestRole == RolesConstants.SuperAdmin ||
-                   highestRole == RolesConstants.Service;
-        }
-
-        public bool CanUserUpdateUniversity(string accessToken)
-        {
-            return _tokenDecoder.GetHighestUserRole(accessToken) == RolesConstants.SuperAdmin;
-        }
-
-        public bool CanUserDeleteUniversity(string accessToken)
-        {
-            return _tokenDecoder.GetHighestUserRole(accessToken) == RolesConstants.SuperAdmin;
-        }
+        #endregion
     }
 }

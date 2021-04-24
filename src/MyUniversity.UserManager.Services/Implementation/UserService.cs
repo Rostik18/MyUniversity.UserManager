@@ -157,12 +157,106 @@ namespace MyUniversity.UserManager.Services.Implementation
 
             var user = await query.FirstOrDefaultAsync(x => x.Id == id);
 
-            if (user == null)
+            if (user is null)
             {
                 throw new RpcException(new Status(StatusCode.NotFound, $"User with id {id} not found"));
             }
 
             return _mapper.Map<UserModel>(user);
+        }
+
+        public async Task<UserModel> UpdateUserAsync(UpdateUserModel updateModel, string accessToken)
+        {
+            _logger.LogDebug("Taking highest user role");
+
+            var highestRole = _tokenDecoder.GetHighestUserRole(accessToken);
+
+            if (highestRole == RolesConstants.Student &&
+                _tokenDecoder.GetUserId(accessToken) != updateModel.Id)
+            {
+                throw new RpcException(new Status(StatusCode.PermissionDenied, "Student cannot update another student"));
+            }
+
+            _logger.LogDebug("Creating query");
+
+            var userQuery = _dBContext.Users.Where(x => x.Id == updateModel.Id);
+
+            if (highestRole != RolesConstants.SuperAdmin &&
+                highestRole != RolesConstants.Service)
+            {
+                var userTenantId = _tokenDecoder.GetUserTenantId(accessToken);
+
+                userQuery = userQuery.Where(x => x.TenantId == userTenantId);
+            }
+
+            _logger.LogDebug("Executing query");
+
+            var user = await userQuery.FirstOrDefaultAsync();
+
+            if (user is null)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, $"User with id {updateModel.Id} not found"));
+            }
+
+            _logger.LogDebug("Updating user");
+
+            if (string.IsNullOrEmpty(updateModel.FirstName))
+            {
+                user.FirstName = updateModel.FirstName;
+            }
+            if (string.IsNullOrEmpty(updateModel.LastName))
+            {
+                user.LastName = updateModel.LastName;
+            }
+            if (string.IsNullOrEmpty(updateModel.PhoneNumber))
+            {
+                user.PhoneNumber = updateModel.PhoneNumber;
+            }
+            if (string.IsNullOrEmpty(updateModel.EmailAddress))
+            {
+                user.EmailAddress = updateModel.EmailAddress;
+            }
+            if (string.IsNullOrEmpty(updateModel.UniversityId))
+            {
+                if (highestRole != RolesConstants.SuperAdmin)
+                {
+                    throw new RpcException(new Status(StatusCode.PermissionDenied, "You cannot change user university"));
+                }
+
+                var usiversity = await _dBContext.Universities.FirstOrDefaultAsync(x => x.TenantId == updateModel.UniversityId);
+
+                if (usiversity is null)
+                {
+                    throw new RpcException(new Status(StatusCode.NotFound, $"University with id {updateModel.UniversityId} not found"));
+                }
+
+                user.TenantId = updateModel.UniversityId;
+            }
+            if (updateModel.Roles.Any())
+            {
+                var availableRoles = _permissionResolver.WhichRolesUserHasAccessTo(accessToken);
+
+                var roles = await _dBContext.Roles.Where(x => availableRoles.Contains(x.Role)).ToListAsync();
+
+                if (updateModel.Roles.Count() != roles.Count)
+                {
+                    throw new RpcException(new Status(StatusCode.PermissionDenied, "You cannot change user roles"));
+                }
+
+                user.UserRoles.RemoveAll(x => true);
+                user.UserRoles.AddRange(roles.Select(x => new UserRoleEntity { RoleId = x.Id }));
+            }
+
+            var updatedUser = _dBContext.Users.Update(user);
+            await _dBContext.SaveChangesAsync();
+
+            return _mapper.Map<UserModel>(updatedUser.Entity);
+        }
+
+        Task<bool> DeleteUserByIdAsync(int id, string accessToken)
+        {
+            //todo
+            return null;
         }
 
         private IQueryable<UserEntity> CreateGetUsersQuery(string accessToken)

@@ -4,8 +4,9 @@ namespace MyUniversity.UserManager.Services
 {
     public interface ITokenDecoder
     {
-        public IEnumerable<string> GetUserRoles(string accessToken);
-        public string GetHighestUserRole(string accessToken);
-        public string GetUserTenantId(string accessToken);
+        IEnumerable<string> GetUserRoles(string accessToken);
+        string GetHighestUserRole(string accessToken);
+        string GetUserTenantId(string accessToken);
+        int GetUserId(string accessToken);
     }
 }

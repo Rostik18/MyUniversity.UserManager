@@ -44,6 +44,47 @@ namespace MyUniversity.UserManager.Services.Implementation
                 x.Role == RolesConstants.Student);
         }
 
+        public bool CanSoftDeleteUserWithHighestRole(string highestDeletingUserRole, string accessToken)
+        {
+            var highestUserRole = _tokenDecoder.GetHighestUserRole(accessToken);
+
+            switch (highestUserRole)
+            {
+                case RolesConstants.SuperAdmin:
+                case RolesConstants.Service:
+                case RolesConstants.UniversityAdmin
+                    when highestDeletingUserRole != RolesConstants.SuperAdmin &&
+                         highestDeletingUserRole != RolesConstants.Service:
+                case RolesConstants.Teacher
+                    when highestDeletingUserRole == RolesConstants.Student:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        public bool CanHardDeleteUserWithHighestRole(string highestDeletingUserRole, string accessToken)
+        {
+            var highestUserRole = _tokenDecoder.GetHighestUserRole(accessToken);
+
+            return highestUserRole switch
+            {
+                RolesConstants.SuperAdmin or RolesConstants.Service => true,
+                _ => false,
+            };
+        }
+
+        public bool CanRestoreUser(string accessToken)
+        {
+            var highestUserRole = _tokenDecoder.GetHighestUserRole(accessToken);
+
+            return highestUserRole switch
+            {
+                RolesConstants.SuperAdmin or RolesConstants.Service => true,
+                _ => false,
+            };
+        }
+
         #endregion
 
         #region University

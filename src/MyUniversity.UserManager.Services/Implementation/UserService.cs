@@ -16,6 +16,7 @@ using MyUniversity.UserManager.Models.User;
 using MyUniversity.UserManager.Repository.DbContext;
 using MyUniversity.UserManager.Repository.Entities.User;
 using MyUniversity.UserManager.Repository.Helpers;
+using MyUniversity.UserManager.Services.Helpers;
 using MyUniversity.UserManager.Services.Settings;
 
 namespace MyUniversity.UserManager.Services.Implementation
@@ -136,7 +137,7 @@ namespace MyUniversity.UserManager.Services.Implementation
         {
             _logger.LogDebug("Preparing db query");
 
-            var query = CreateGetUsersQuery(accessToken);
+            var query = CreateGetUsersQuery(accessToken).AsNoTracking();
 
             _logger.LogDebug("Executing db query");
 
@@ -151,7 +152,7 @@ namespace MyUniversity.UserManager.Services.Implementation
         {
             _logger.LogDebug("Preparing db query");
 
-            var query = CreateGetUsersQuery(accessToken);
+            var query = CreateGetUsersQuery(accessToken).AsNoTracking();
 
             _logger.LogDebug("Executing db query");
 
@@ -179,19 +180,11 @@ namespace MyUniversity.UserManager.Services.Implementation
 
             _logger.LogDebug("Creating query");
 
-            var userQuery = _dBContext.Users.Where(x => x.Id == updateModel.Id);
-
-            if (highestRole != RolesConstants.SuperAdmin &&
-                highestRole != RolesConstants.Service)
-            {
-                var userTenantId = _tokenDecoder.GetUserTenantId(accessToken);
-
-                userQuery = userQuery.Where(x => x.TenantId == userTenantId);
-            }
+            var userQuery = CreateGetUsersQuery(accessToken);
 
             _logger.LogDebug("Executing query");
 
-            var user = await userQuery.FirstOrDefaultAsync();
+            var user = await userQuery.FirstOrDefaultAsync(x => x.Id == updateModel.Id);
 
             if (user is null)
             {
@@ -200,23 +193,35 @@ namespace MyUniversity.UserManager.Services.Implementation
 
             _logger.LogDebug("Updating user");
 
-            if (string.IsNullOrEmpty(updateModel.FirstName))
+            if (!string.IsNullOrEmpty(updateModel.FirstName))
             {
                 user.FirstName = updateModel.FirstName;
             }
-            if (string.IsNullOrEmpty(updateModel.LastName))
+            if (!string.IsNullOrEmpty(updateModel.LastName))
             {
                 user.LastName = updateModel.LastName;
             }
-            if (string.IsNullOrEmpty(updateModel.PhoneNumber))
+            if (!string.IsNullOrEmpty(updateModel.PhoneNumber))
             {
                 user.PhoneNumber = updateModel.PhoneNumber;
             }
-            if (string.IsNullOrEmpty(updateModel.EmailAddress))
+            if (!string.IsNullOrEmpty(updateModel.EmailAddress))
             {
+                if (await _dBContext.Users.AnyAsync(x => x.EmailAddress == updateModel.EmailAddress))
+                {
+                    throw new RpcException(new Status(StatusCode.AlreadyExists, $"User with email {updateModel.EmailAddress} already exist"));
+                }
+
                 user.EmailAddress = updateModel.EmailAddress;
             }
-            if (string.IsNullOrEmpty(updateModel.UniversityId))
+            if (!string.IsNullOrEmpty(updateModel.Password))
+            {
+                PasswordHashHelper.CreatePasswordHash(updateModel.Password, out var hash, out var salt);
+
+                user.PasswordHash = hash;
+                user.PasswordSalt = salt;
+            }
+            if (!string.IsNullOrEmpty(updateModel.UniversityId))
             {
                 if (highestRole != RolesConstants.SuperAdmin)
                 {
@@ -236,7 +241,7 @@ namespace MyUniversity.UserManager.Services.Implementation
             {
                 var availableRoles = _permissionResolver.WhichRolesUserHasAccessTo(accessToken);
 
-                var roles = await _dBContext.Roles.Where(x => availableRoles.Contains(x.Role)).ToListAsync();
+                var roles = await _dBContext.Roles.Where(x => availableRoles.Contains(x.Role) && updateModel.Roles.Contains(x.Id)).ToListAsync();
 
                 if (updateModel.Roles.Count() != roles.Count)
                 {
@@ -253,13 +258,65 @@ namespace MyUniversity.UserManager.Services.Implementation
             return _mapper.Map<UserModel>(updatedUser.Entity);
         }
 
-        Task<bool> DeleteUserByIdAsync(int id, string accessToken)
+        public async Task<bool> SoftDeleteUserAsync(int id, string accessToken)
         {
-            //todo
-            return null;
+            var user = await GetUserForDeletingAsync(id, accessToken, false);
+
+            _logger.LogDebug("Validating user permission");
+
+            if (!_permissionResolver.CanSoftDeleteUserWithHighestRole(UserHelpers.GetHighestRole(user), accessToken))
+            {
+                throw new RpcException(new Status(StatusCode.PermissionDenied, "You do not have permissions to delete this user"));
+            }
+
+            _logger.LogDebug($"Soft deleting user with id {id}");
+
+            user.IsSoftDeleted = true;
+
+            var updatedUser = _dBContext.Users.Update(user);
+            await _dBContext.SaveChangesAsync();
+
+            return updatedUser != null;
         }
 
-        private IQueryable<UserEntity> CreateGetUsersQuery(string accessToken)
+        public async Task<bool> HardDeleteUserAsync(int id, string accessToken)
+        {
+            var user = await GetUserForDeletingAsync(id, accessToken, true);
+
+            _logger.LogDebug("Validating user permission");
+
+            if (!_permissionResolver.CanHardDeleteUserWithHighestRole(UserHelpers.GetHighestRole(user), accessToken))
+            {
+                throw new RpcException(new Status(StatusCode.PermissionDenied, "You do not have permissions to delete this user"));
+            }
+
+            _logger.LogDebug($"Hard deleting user with id {id}");
+
+            var updatedUser = _dBContext.Users.Remove(user);
+            await _dBContext.SaveChangesAsync();
+
+            return updatedUser != null;
+        }
+
+        private async Task<UserEntity> GetUserForDeletingAsync(int id, string accessToken, bool withDeleted)
+        {
+            _logger.LogDebug("Preparing db query");
+
+            var query = CreateGetUsersQuery(accessToken, withDeleted);
+
+            _logger.LogDebug("Executing query");
+
+            var user = await query.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (user is null)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, $"User with id {id} not found"));
+            }
+
+            return user;
+        }
+
+        private IQueryable<UserEntity> CreateGetUsersQuery(string accessToken, bool withDeleted = false)
         {
             _logger.LogDebug("Find out what roles user can read");
 
@@ -276,7 +333,8 @@ namespace MyUniversity.UserManager.Services.Implementation
                 .Include(x => x.UserRoles)
                 .ThenInclude(x => x.Role)
                 .Include(x => x.University)
-                .Where(x => x.UserRoles.Any(xx => accessRoles.Contains(xx.Role.Role)));
+                .Where(x => x.UserRoles.Any(xx => accessRoles.Contains(xx.Role.Role)) &&
+                            x.IsSoftDeleted == withDeleted);
 
             var userHighestRole = _tokenDecoder.GetHighestUserRole(accessToken);
 

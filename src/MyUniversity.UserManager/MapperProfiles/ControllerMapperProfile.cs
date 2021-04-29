@@ -13,22 +13,34 @@ namespace MyUniversity.UserManager.MapperProfiles
     {
         public ControllerMapperProfile()
         {
+            #region User
+
             CreateMap<RegistrationRequest, RegisterUserModel>()
                 .ForMember(x => x.Roles, x => x.MapFrom(xx => xx.Roles.ToList()));
 
-            CreateMap<RoleModel, RoleReply>();
+            CreateMap<UpdateUserRequest, UpdateUserModel>();
+
             CreateMap<UserModel, UserModelReply>();
             CreateMap<UniversityModel, User.UniversityModelReply>()
                 .ForMember(x => x.Id, x => x.MapFrom(xx => xx.TenantId));
-            CreateMap<RoleModel, RoleModelReply>();
+
+            #endregion
+
+            #region University
 
             CreateMap<UniversityModel, University.UniversityModelReply>()
                 .ForMember(x => x.Id, x => x.MapFrom(xx => xx.TenantId));
             CreateMap<CreateUniversityRequest, CreateUniversityModel>();
             CreateMap<UpdateUniversityRequest, UpdateUniversityModel>();
 
+            #endregion
 
+            #region Role
 
+            CreateMap<RoleModel, RoleReply>();
+            CreateMap<RoleModel, RoleModelReply>();
+
+            #endregion
         }
     }
 }

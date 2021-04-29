@@ -108,5 +108,69 @@ namespace MyUniversity.UserManager.Controllers
 
             return user;
         }
+
+        public override async Task<UserModelReply> UpdateUser(UpdateUserRequest request, ServerCallContext context)
+        {
+            var accessToken = context.RequestHeaders.GetValue(HeaderKeys.AccessToken);
+
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new RpcException(new Status(StatusCode.PermissionDenied, "Unauthorized action"));
+            }
+
+            _logger.LogDebug($"Updating user with id {request.Id}");
+
+            var updateUser = _mapper.Map<UpdateUserModel>(request);
+
+            var updatedUser = await _userService.UpdateUserAsync(updateUser, accessToken);
+
+            var user = _mapper.Map<UserModelReply>(updatedUser);
+
+            _logger.LogDebug("Sending update user response");
+
+            return user;
+        }
+
+        public override async Task<DeletingReply> SoftDeleteUser(DeleteUserRequest request, ServerCallContext context)
+        {
+            var accessToken = context.RequestHeaders.GetValue(HeaderKeys.AccessToken);
+
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new RpcException(new Status(StatusCode.PermissionDenied, "Unauthorized action"));
+            }
+
+            _logger.LogDebug($"Soft deleting user with id {request.Id}");
+
+            var deleteResult = await _userService.SoftDeleteUserAsync(request.Id, accessToken);
+
+            _logger.LogDebug("Sending soft delete user response");
+
+            return new DeletingReply
+            {
+                DeletingSuccess = deleteResult
+            };
+        }
+
+        public override async Task<DeletingReply> HardDeleteUser(DeleteUserRequest request, ServerCallContext context)
+        {
+            var accessToken = context.RequestHeaders.GetValue(HeaderKeys.AccessToken);
+
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new RpcException(new Status(StatusCode.PermissionDenied, "Unauthorized action"));
+            }
+
+            _logger.LogDebug($"Hard deleting user with id {request.Id}");
+
+            var deleteResult = await _userService.HardDeleteUserAsync(request.Id, accessToken);
+
+            _logger.LogDebug("Sending hard delete user response");
+
+            return new DeletingReply
+            {
+                DeletingSuccess = deleteResult
+            };
+        }
     }
 }

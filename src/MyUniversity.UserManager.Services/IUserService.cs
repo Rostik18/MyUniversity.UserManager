@@ -11,6 +11,7 @@ namespace MyUniversity.UserManager.Services
         Task<IEnumerable<UserModel>> GetAllUsersAsync(string accessToken);
         Task<UserModel> GetUserByIdAsync(int id, string accessToken);
         Task<UserModel> UpdateUserAsync(UpdateUserModel updateModel, string accessToken);
-        Task<bool> DeleteUserByIdAsync(int id, string accessToken);
+        Task<bool> SoftDeleteUserAsync(int id, string accessToken);
+        Task<bool> HardDeleteUserAsync(int id, string accessToken);
     }
 }

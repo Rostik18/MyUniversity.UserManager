@@ -112,7 +112,7 @@ namespace MyUniversity.UserManager.Services.Implementation
             var user = await _dBContext.Users
                 .Include(x => x.UserRoles)
                 .ThenInclude(x => x.Role)
-                .FirstOrDefaultAsync(x => x.EmailAddress == email);
+                .FirstOrDefaultAsync(x => x.EmailAddress == email && x.IsSoftDeleted == false);
 
             if (user is null)
             {
